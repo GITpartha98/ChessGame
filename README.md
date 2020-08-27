@@ -1,4 +1,7 @@
 # ChessGame
+
+*** CLICK ON Chessgame.cpp for Launching the application
+==========================================================
 String-Based GUI, Chat-based system of playing the game
      Rules for using the Chat-Based Chessgame
     ==========================================================================================
@@ -20,3 +23,10 @@ String-Based GUI, Chat-based system of playing the game
     e2 e4 e7 e5 g1 f3 g8 f6 f1 c4 f8 c5 f3 e5 f6 e4 d1 h5 h8 g8 h5 f7 
     if you Typed correctly Game Results in Checkmate "
     ==========================================================================================
+
+
+CLICK ON CODE DEVELOPMENT FOLDER TO SEE STEP BY STEP DEVELOPMENT OF THE PROGRAM CODE
+========================================================================================
+
+CHECK TESTCASE1 FOLDER TO RUN THE CODE IN TEST MODE
+==================================================================================

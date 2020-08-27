@@ -25,8 +25,10 @@ String-Based GUI, Chat-based system of playing the game
     ==========================================================================================
 
 
-CLICK ON CODE DEVELOPMENT FOLDER TO SEE STEP BY STEP DEVELOPMENT OF THE PROGRAM CODE
+*** CLICK ON CODE DEVELOPMENT FOLDER TO SEE STEP BY STEP DEVELOPMENT OF THE PROGRAM CODE
 ========================================================================================
 
-CHECK TESTCASE1 FOLDER TO RUN THE CODE IN TEST MODE
+*** CHECK TESTCASE FOLDER TO CHECK ALL THE TESTCASES
 ==================================================================================
+   To Run the Test cases Edit the cpp program to remove the comments on FileOpen() and readfile() in the main program
+   and read the testcase files in Chessgame.cpp If game ends successfully or in Checkmate TestCases are successful

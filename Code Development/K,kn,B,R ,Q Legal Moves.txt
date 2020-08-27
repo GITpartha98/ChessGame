@@ -1,0 +1,391 @@
+#include<iostream>
+
+#include<vector>
+
+#include<string.h>
+
+#define ERR_MSG cout<<"INVALID "
+
+#define K_RULES {{0,1},{1,0},{1,1},{-1,0},{0,-1},{-1,-1},{-1,1},{1,-1}};
+
+#define N_RULES {{1,2},{2,1},{-1,-2},{-2,-1},{-1,2},{-2,1},{1,-2},{2,-1}};
+
+
+struct piece
+{
+    char COLOR;
+    //'B' for Black 'W' for White//
+    char PIECE;
+    /* NAME OF THE PIECE K for king Q for Queen B for Bishop
+    N for Knight R for Rook P for Pawn */
+    int RULES[8][2];
+    //DEFINING THE RULES??//
+
+    piece()
+    {
+        //PIECE COLOR
+        std::cout<<"Enter Piece color 'B' for Black 'W' for White \n";
+        std::cin>>COLOR;
+
+        //PIECE TYPE
+        std::cout<<"Enter the Piece K for king Q for Queen B for Bishop N for Knight R for Rook P for Pawn \n";
+        std::cin>>PIECE;
+
+        //DEFINE RULES OR SQUARES IT CAN ENTER(RELATIVE)
+        if(PIECE=='K')
+        {
+            int rules[][2]=K_RULES;
+
+            for(int i=0; i<8; i++)
+            {
+
+                for(int j=0; j<2; j++)
+
+                {
+
+                    RULES[i][j]=rules[i][j];
+                    //std::cout<<RULES[i][j];
+                }
+
+            }
+
+        }
+        else if(PIECE=='N')
+        {
+            int rules[][2]=N_RULES;
+
+            for(int i=0; i<8; i++)
+            {
+                for(int j=0; j<2; j++)
+
+                {
+
+                    RULES[i][j]=rules[i][j];
+
+                }
+
+            }
+
+
+        }
+    }
+
+    void display()
+    {
+        std::cout<<"COLOR: "<< COLOR <<"\n PIECE:"<< PIECE<<"\n";
+        //row:"<< pos[0]<<"\n col:"<<pos[1];
+    }
+
+};
+class chessboard
+{
+
+    char C_BRD[8][8];
+
+    piece P[2];
+
+public:
+
+    chessboard()
+    {
+//Create Chessboard //
+        for(int i=0; i<8; i++)
+        {
+
+            for(int j=0; j<8; j++)
+            {
+                C_BRD[i][j]='X';
+            }
+
+        }
+
+//PUT PIECES//
+        C_BRD[4][4]=P[0].PIECE;
+
+        C_BRD[6][5]=P[1].PIECE;
+
+    }
+    void display()
+    {
+        for(int i=0; i<8; i++)
+        {
+            for(int j=0; j<8; j++)
+            {
+
+                std::cout<<C_BRD[i][j]<<"  ";
+
+            }
+
+            std::cout<<"\n\n";
+        }
+
+        std::cout<<"\n\n";
+    }
+
+    void legal_moves()
+    {
+
+        for(int PIECE_IN=0; PIECE_IN<2; PIECE_IN++)
+        {
+            P[PIECE_IN].display();
+            int *temp=FIND_PIECEPOS(P[PIECE_IN]);
+            int ROW_IN=temp[0];
+            int COL_IN=temp[1];
+            // std::cout<<ROW_IN<<COL_IN<<"\n\n"<<(int)P[PIECE_IN].PIECE;
+            if(P[PIECE_IN].PIECE=='Q')//FOR QUEEN//
+            {
+                std::cout<<"HEYYYYYYYYY";
+
+                int dir_flags[]= {0,0,0,0,0,0,0,0};
+
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //std::cout<<"HEY";
+                    if(CHK_NO_BARRIER(ROW_IN+relative_pos,COL_IN)&&(dir_flags[0]==0))
+                    {
+                        //std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                        C_BRD[ROW_IN+relative_pos][COL_IN]='Q';
+                        //std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        dir_flags[0]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN-relative_pos,COL_IN)&&(dir_flags[1]==0))
+                    {
+                        C_BRD[ROW_IN-relative_pos][COL_IN]='Q';
+                    }
+                    else
+                    {
+                        dir_flags[1]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN,COL_IN-relative_pos)&&(dir_flags[2]==0))
+                    {
+                        C_BRD[ROW_IN][COL_IN-relative_pos]='Q';
+                    }
+                    else
+                    {
+                        dir_flags[2]=1;
+                    }
+
+
+                    if(CHK_NO_BARRIER(ROW_IN,COL_IN+relative_pos)&&dir_flags[3]==0)
+                    {
+                        C_BRD[ROW_IN][COL_IN+relative_pos]='Q';
+                    }
+                    else
+                    {
+                        dir_flags[3]=1;
+                    }
+                    if(CHK_NO_BARRIER(ROW_IN+relative_pos,COL_IN+relative_pos)&&(dir_flags[0]==0))
+                    {
+                        std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                        C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos]='Q';
+                        std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        dir_flags[4]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN-relative_pos,COL_IN+relative_pos)&&(dir_flags[1]==0))
+                    {
+                        C_BRD[ROW_IN-relative_pos][COL_IN+relative_pos]='Q';
+                    }
+                    else
+                    {
+                        dir_flags[5]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN-relative_pos,COL_IN-relative_pos)&&(dir_flags[2]==0))
+                    {
+                        C_BRD[ROW_IN-relative_pos][COL_IN-relative_pos]='Q';
+                    }
+                    else
+                    {
+                        dir_flags[6]=1;
+                    }
+
+
+                    if(CHK_NO_BARRIER(ROW_IN+relative_pos,COL_IN-relative_pos)&&dir_flags[3]==0)
+                    {
+                        C_BRD[ROW_IN+relative_pos][COL_IN-relative_pos]='Q';
+                    }
+                    else
+                    {
+                        dir_flags[7]=1;
+                    }
+
+                }
+            }
+            else if(P[PIECE_IN].PIECE=='R')//FOR ROOK//
+            {
+                std::cout<<"HEYYYYYYYYY";
+
+                int dir_flags[]= {0,0,0,0};
+
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //std::cout<<"HEY";
+                    if(CHK_NO_BARRIER(ROW_IN+relative_pos,COL_IN)&&(dir_flags[0]==0))
+                    {
+                        //std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                        C_BRD[ROW_IN+relative_pos][COL_IN]='R';
+                        //std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        dir_flags[0]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN-relative_pos,COL_IN)&&(dir_flags[1]==0))
+                    {
+                        C_BRD[ROW_IN-relative_pos][COL_IN]='R';
+                    }
+                    else
+                    {
+                        dir_flags[1]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN,COL_IN-relative_pos)&&(dir_flags[2]==0))
+                    {
+                        C_BRD[ROW_IN][COL_IN-relative_pos]='R';
+                    }
+                    else
+                    {
+                        dir_flags[2]=1;
+                    }
+
+
+                    if(CHK_NO_BARRIER(ROW_IN,COL_IN+relative_pos)&&dir_flags[3]==0)
+                    {
+                        C_BRD[ROW_IN][COL_IN+relative_pos]='R';
+                    }
+                    else
+                    {
+                        dir_flags[3]=1;
+                    }
+
+                }
+            }
+
+
+            else  if(P[PIECE_IN].PIECE=='B')
+            {
+                //std::cout<<"HEYYYYYYYYY";
+                int dir_flags[]= {0,0,0,0};
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //std::cout<<"HEY";
+                    if(CHK_NO_BARRIER(ROW_IN+relative_pos,COL_IN+relative_pos)&&(dir_flags[0]==0))
+                    {
+                        std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                        C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos]='B';
+                        std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        dir_flags[0]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN-relative_pos,COL_IN+relative_pos)&&(dir_flags[1]==0))
+                    {
+                        C_BRD[ROW_IN-relative_pos][COL_IN+relative_pos]='B';
+                    }
+                    else
+                    {
+                        dir_flags[1]=1;
+                    }
+
+                    if(CHK_NO_BARRIER(ROW_IN-relative_pos,COL_IN-relative_pos)&&(dir_flags[2]==0))
+                    {
+                        C_BRD[ROW_IN-relative_pos][COL_IN-relative_pos]='B';
+                    }
+                    else
+                    {
+                        dir_flags[2]=1;
+                    }
+
+
+                    if(CHK_NO_BARRIER(ROW_IN+relative_pos,COL_IN-relative_pos)&&dir_flags[3]==0)
+                    {
+                        C_BRD[ROW_IN+relative_pos][COL_IN-relative_pos]='B';
+                    }
+                    else
+                    {
+                        dir_flags[3]=1;
+                    }
+
+                }
+
+            }
+            else if(P[PIECE_IN].PIECE=='K'||'N')
+            {
+                for(int R=0; R<8; R++)
+                {
+                    if(CHK_NO_BARRIER(ROW_IN+P[PIECE_IN].RULES[R][0],COL_IN+P[PIECE_IN].RULES[R][1]))
+                    {
+                        C_BRD[ROW_IN+P[PIECE_IN].RULES[R][0]][COL_IN+P[PIECE_IN].RULES[R][1]]=P[PIECE_IN].PIECE;
+
+                    }
+                }
+
+                C_BRD[ROW_IN][COL_IN]='X';
+            }
+
+
+        }
+
+    }//
+
+
+
+    bool CHK_NO_BARRIER(int row,int col)
+
+    {
+        return ((C_BRD[row][col]=='X')&&(row>=0&&col>=0&&row<8&&col<8));
+    }
+    int* FIND_PIECEPOS(piece & P)
+    {
+        std::cout<<"HEY \n";
+        static int PIECE_pos[2];
+
+        for(int ROW_IN=0; ROW_IN<8; ROW_IN++)
+        {
+            int flag=0;
+            for(int COL_IN=0; COL_IN<8; COL_IN++)
+            {
+                if(P.PIECE==C_BRD[ROW_IN][COL_IN])
+                {
+                    PIECE_pos[0]=ROW_IN;
+                    std::cout<<PIECE_pos[0]<<"\n\n";
+                    PIECE_pos[1]=COL_IN;
+                    //std::cout<<PIECE_pos[1]<<"\n\n";
+                    flag=1;
+                    break;
+                }
+            }
+            if(flag)
+                break;
+        }
+        return PIECE_pos;
+    }
+};
+
+int main()
+{
+    chessboard C;
+
+    C.display();
+
+    C.legal_moves();
+
+    C.display();
+
+    return 0;
+}
+
+
+

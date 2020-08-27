@@ -1,0 +1,134 @@
+#include<iostream>
+#include<vector>
+#include<string.h>
+#define ERR_MSG cout<<"INVALID "
+#define K_RULES {{0,1},{1,0},{1,1},{-1,0},{0,-1},{-1,-1},{-1,1},{1,-1}};
+#define N_RULES {{1,2},{2,1},{-1,-2},{-2,-1},{-1,2},{-2,1},{1,-2},{2,-1}};
+
+bool CHK_BOUND(int x,int y)
+{
+    return (x>=0&&y>=0&&x<8&&y<8);
+}
+
+struct piece
+{
+    char COLOR;
+    //'B' for Black 'W' for White//
+    char PIECE;
+    /* NAME OF THE PIECE K for king Q for Queen B for Bishop
+    N for Knight R for Rook P for Pawn */
+    int RULES[8][2];
+    //DEFINING THE RULES??//
+
+    piece()
+    {
+        //PIECE COLOR
+        std::cout<<"Enter Piece color 'B' for Black 'W' for White \n";
+        std::cin>>COLOR;
+
+        //PIECE TYPE
+        std::cout<<"Enter the Piece K for king Q for Queen B for Bishop N for Knight R for Rook P for Pawn \n";
+        std::cin>>PIECE;
+
+        //DEFINE RULES OR SQUARES IT CAN ENTER(RELATIVE)
+        if(PIECE=='K')
+        {
+          int rules[][2]=K_RULES;
+
+            for(int i=0;i<8;i++)
+                for(int j=0;j<2;j++)
+                {
+                  RULES[i][j]=rules[i][j];
+                  std::cout<<RULES[i][j];
+                }
+        }
+        else if(PIECE=='N')
+        {
+          int rules[][2]=N_RULES;
+
+          for(int i=0;i<8;i++)
+                for(int j=0;j<2;j++)
+                   RULES[i][j]=rules[i][j];
+        }
+
+    //COPYING VALUES//
+
+
+    }
+
+    void display()
+    {
+        std::cout<<"COLOR: "<< COLOR <<"\n PIECE:"<< PIECE<<"\n";
+        //row:"<< pos[0]<<"\n col:"<<pos[1];
+    }
+
+};
+class chessboard
+{
+int C_BRD[8][8];
+piece P;
+public:
+chessboard()
+{
+//Create Chessboard //
+for(int i=0;i<8;i++)
+  for(int j=0;j<8;j++)
+    C_BRD[i][j]=10;
+
+//PUT PIECES//
+C_BRD[4][4]=P.PIECE;
+}
+void display()
+{
+    for(int i=0;i<8;i++)
+    {
+       for(int j=0;j<8;j++)
+          std::cout<<C_BRD[i][j]<<"  ";
+       std::cout<<"\n\n";
+    }
+    std::cout<<"\n\n";
+}
+
+void legal_moves()
+{
+    for(int i=0;i<8;i++)
+    {
+    int flag=0;
+        for(int j=0;j<8;j++)
+           if(C_BRD[i][j]==P.PIECE)
+           {
+            for(int R=0;R<8;R++)
+            {
+               if(CHK_NO_BARRIER(i+P.RULES[R][0],j+P.RULES[R][1]))
+               {
+                  C_BRD[i+P.RULES[R][0]][j+P.RULES[R][1]]=P.PIECE;
+                   //std::cout<<i+P.RULES[R][0]<<j+P.RULES[R][1];
+               }
+            }
+              C_BRD[i][j]=10;
+               flag=1;
+               break;
+           }
+       if(flag)
+        break;
+    }
+
+}
+
+bool CHK_NO_BARRIER(int row,int col)
+{
+    return (C_BRD[row][col]==10)&&(row>=0&&col>=0&&row<8&&col<8);
+}
+};
+
+int main()
+{
+    chessboard C;
+    C.display();
+    C.legal_moves();
+    C.display();
+    return 0;
+}
+
+
+

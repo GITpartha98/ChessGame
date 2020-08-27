@@ -1,0 +1,977 @@
+#include<iostream>
+
+#include<iomanip>
+
+#include<algorithm>
+
+#include<vector>
+
+#include<fstream>
+
+#include<string.h>
+
+#include<string>
+
+#include<sstream>
+
+#define ERR_MSG std::cout<<"INVALID "
+
+#define K_RULES {{0,1},{1,0},{1,1},{-1,0},{0,-1},{-1,-1},{-1,1},{1,-1}};
+
+#define N_RULES {{1,2},{2,1},{-1,-2},{-2,-1},{-1,2},{-2,1},{1,-2},{2,-1}};
+
+#define W_PIECES {"WR","WN","WB","WQ","WK","WB","WN","WR"}
+
+#define B_PIECES {"BR","BN","BB","BQ","BK","BB","BN","BR" };
+int COUNTER1=0,COUNTER2=0;
+std::vector<std::string> INI_SQRS;
+std::vector <std::string> FIN_SQRS;
+
+class pieces
+{
+    public:
+    char color;
+    int curr_pos[2];
+    int prev_pos[2];
+    int cap_flag;
+
+    pieces(char X)
+    {
+        color=X;
+        for(int i=0;i<2;i++)
+        {
+            curr_pos[i]=-1;
+            prev_pos[i]=-1;
+        }
+        cap_flag=0;
+    }
+    void MK_MV(int row,int col)
+    {
+        for(int i=0;i<2;i++)
+        {
+            prev_pos[i]=curr_pos[i];
+        }
+       // std::cout<<"PREVIOUS POSITION UPDATED \n";
+
+        curr_pos[0]=row;
+        curr_pos[1]=col;
+
+       // std::cout<<"CURRENT POSITION UPDATED "<<curr_pos[0]<<" "<<curr_pos[1]<<"\n";
+    }
+
+    void display()
+    {
+        std::cout<<"COLOR:"<<color<<std::endl;
+        for(int i=0;i<2;i++)
+        {
+            std::cout<<" current pos "<<curr_pos[i]<<" prev pos "<<prev_pos[i]<<std::endl;
+        }
+    }
+};
+class pawn:public pieces
+{
+    char name='P';
+public:
+    pawn(char X):pieces(X)
+    {
+
+    }
+    void P_display()
+    {
+        std::cout<<"type"<<name<<std::endl;
+        display();
+    }
+
+};
+
+class king:public pieces
+{
+    char name='K';
+
+public:
+    int castle_flag=0;
+
+    king(char X):pieces(X)
+    {
+
+    }
+};
+
+class knight:public pieces
+{
+    char name='N';
+
+    public:
+        knight(char X):pieces(X)
+        {
+
+        }
+};
+
+class bishop:public pieces
+{
+    char name='B';
+
+public:
+    bishop (char X):pieces(X)
+    {
+
+    }
+};
+
+class rook:public pieces
+{
+    char name='R';
+public:
+    int castle_flag=0;
+    rook(char X):pieces(X)
+    {
+
+    }
+};
+class queen:public pieces
+{
+    char name='Q';
+public:
+    queen(char X):pieces(X)
+    {
+
+    }
+};
+class chessboard
+{
+    std::string C_BRD[9][9];
+   pawn WP[8],BP[8];//C[2],D[2],E[2],F[2],G[2],H[2];
+   king WK,BK;
+   knight WN[2],BN[2];
+   bishop WB[2],BB[2];
+   rook WR[2],BR[2];
+   queen WQ,BQ;
+
+
+
+
+public:
+  chessboard():WP{'W','W','W','W','W','W','W','W'},BP{'B','B','B','B','B','B','B','B'},WK('W'),BK('B'),WN{'W','W'},BN{'B','B'},WB{'W','W'},BB{'B','B'},WR{'W','W'},BR{'B','B'},WQ('W'),BQ('B')
+  {
+      std::cout<<"CHESSBOARD CTR ENTERED \n\n";
+    for(int R=0;R<9;R++)
+        for(int C=0;C<9;C++)
+    {
+        C_BRD[R][C]="XX";
+    }
+
+     // std::cout<<"CHESSBOARD CREATED \n\n";
+      for(int i=1;i<9;i++)
+    {
+       // std::cout<<"INIT LOOP ENTERED \n\n";
+        std::stringstream ss;
+       ss<<i;
+       std::string s;
+        ss>>s;
+        C_BRD[0][i]='a'+i-1;
+        C_BRD[i][0]='9'-i;
+        C_BRD[2][i]="BP"+s;
+        C_BRD[7][i]="WP"+s;
+        BP[i-1].MK_MV(1,i);
+        WP[i-1].MK_MV(7,i);
+
+    }
+    //DISPLAY KINGS POSITIONS
+    C_BRD[1][5]="BK";
+    C_BRD[8][5]="WK";
+    WK.MK_MV(8,5);
+    BK.MK_MV(1,5);
+
+    //DISPLAY KNIGHTS POSITIONS
+    C_BRD[1][2]="BN1";
+    C_BRD[1][7]="BN2";
+    C_BRD[8][2]="WN1";
+    C_BRD[8][7]="WN2";
+
+    //DISPLAY BISHOPS POSITION
+    C_BRD[1][3]="BB1";
+    C_BRD[1][6]="BB2";
+    C_BRD[8][3]="WB1";
+    C_BRD[8][6]="WB2";
+
+    //DISPLAY ROOKS POSITIONS
+    C_BRD[1][1]="BR1";
+    C_BRD[1][8]="BR2";
+    C_BRD[8][1]="WR1";
+    C_BRD[8][8]="WR2";
+
+    //DISPLAY QUEEN POSITION
+    C_BRD[1][4]="BQ";
+    C_BRD[8][4]="WQ";
+  }
+
+    void display()
+    {
+        std::cout<<"\n\n CHESSBOARD DISPLAY  \n\n";
+
+     for(int R=0;R<9;R++)
+     {
+
+        for(int C=0;C<9;C++)
+        {
+           std::cout<<std::setw(5)<<C_BRD[R][C]<<"  ";
+        }
+     std::cout<<"\n\n";
+     }
+
+  }
+
+bool make_move(std::string notation,char turn)
+  {
+      int col=notation[0]-'a'+1;
+      int row=9-(notation[1]-'0');
+
+      std::cout<<row<<" "<<col<<"\n\n";
+
+        std::string temp=FIND_PIECE(row,col);
+     if(temp[0]==turn)//FIND_PIECE(row,col)!="XX"&&FIND_PIECE(row,col)!="NN")
+     {
+        // std::cout<<FIND_PIECE(row,col)<<std::endl;
+        std::string initial_pos=FIND_PIECE(row,col);
+
+        std::string PIECE_NAME;
+        PIECE_NAME.assign(initial_pos,0,2);
+
+        std::vector<std::string> final_pos=LEGALMOVES(PIECE_NAME,row,col);
+      if(final_pos.size()==0)
+      {
+          std::cout<<"NO LEGAL MOVES POSSIBLE,CHOOSE A DIFFERENT PIECE \n";
+          return 0;
+      }
+      std::cout<<"LEGAL MOVES OF "<<initial_pos<<" ARE ";
+       for(int c1=0;c1<final_pos.size();c1++)
+       {
+           std::cout<<final_pos[c1]<<"  ";
+       }
+
+       std::cout<<"\n\n"<<"SELECT ONE LEGAL MOVE";
+
+       std::string MOVE;
+
+       std::cin>>MOVE;
+
+       int flag=0;
+
+       for(int c1=0;c1<final_pos.size();c1++)
+       {
+           if(MOVE==final_pos[c1])
+           {
+               flag=1;
+               break;
+           }
+       }
+       if(!flag)
+       {
+           std::cout<<"\n MOVE CHOSEN NOT A LEGAL MOVE \n";
+           return 0;
+       }
+
+        int N_COL=MOVE[0]-'a'+1;
+        int N_ROW=9-(MOVE[1]-'0');
+
+        std::cout<<"\n\n"<<N_ROW<<" "<<N_COL;
+
+        chessboard C2=*this;
+
+         C_BRD[row][col]="XX";
+
+         C_BRD[N_ROW][N_COL]=initial_pos;
+
+         UPDATE_POS(initial_pos,N_ROW,N_COL);
+
+         if(CHK_IF_CHECK(initial_pos[0]))
+         {
+             std::cout<<"\n\n"<<"ILLEGAL BECAUSE KING IS UNDER CHECK \n";
+
+             //C_BRD[N_ROW][N_COL]="XX";
+
+             //C_BRD[row][col]=initial_pos;
+             *this=C2;
+
+             UPDATE_POS(initial_pos,row,col);
+
+             return 0;
+         }
+
+       return 1;
+
+     }
+
+
+     else
+     {
+         std::cout<<"INVALID POSTION"<<std::endl;
+         return 0;
+     }
+
+
+  }
+
+  std::string FIND_PIECE(int row ,int col)
+  {
+     if(CHK_BOUNDARY(row,col))
+     {
+
+         //std::cout<<C_BRD[row][col]<<std::endl;
+         return C_BRD[row][col];
+     }
+     else return "NN";
+  }
+
+  bool CHK_BOUNDARY(int R,int C)
+  {
+      return R>=1&&C>=1&&R<9&&C<9;
+  }
+
+  std::vector<std::string> LEGALMOVES(std::string piece_name,int ROW_IN,int COL_IN)
+  {
+      std::vector <std::string> legals;
+
+      if(piece_name=="WP")
+        {
+            std::string C1=FIND_PIECE(ROW_IN-1,COL_IN-1);
+            std::string C2=FIND_PIECE(ROW_IN-1,COL_IN+1);
+            if(FIND_PIECE(ROW_IN-1,COL_IN)=="XX")
+                    {
+                        legals.push_back(NOTATION(ROW_IN-1,COL_IN));
+                       // C_BRD[ROW_IN-1][COL_IN]=piece_name;
+                       if(ROW_IN==7)
+                        {
+
+                            if(FIND_PIECE(ROW_IN-2,COL_IN)=="XX")
+                            {
+                                //C_BRD[ROW_IN+2][COL_IN]=piece_name;
+                                legals.push_back(NOTATION(ROW_IN-2,COL_IN));
+                            }
+                        }
+
+                    }
+            if(C1[0]=='B')
+            {
+                legals.push_back(NOTATION(ROW_IN-1,COL_IN-1));
+            }
+             if(C2[0]=='B')
+            {
+                legals.push_back(NOTATION(ROW_IN-1,COL_IN+1));
+            }
+        }
+
+       else if(piece_name=="BP")
+          {
+            std::string C1=FIND_PIECE(ROW_IN+1,COL_IN-1);
+            std::string C2=FIND_PIECE(ROW_IN+1,COL_IN+1);
+
+           if(FIND_PIECE(ROW_IN+1,COL_IN)=="XX")
+                    {
+                        legals.push_back(NOTATION(ROW_IN+1,COL_IN));
+                       // C_BRD[ROW_IN-1][COL_IN]=piece_name;
+                       if(ROW_IN==2)
+                        {
+
+                            if(FIND_PIECE(ROW_IN+2,COL_IN)=="XX")
+                            {
+                                //C_BRD[ROW_IN+2][COL_IN]=piece_name;
+                                legals.push_back(NOTATION(ROW_IN+2,COL_IN));
+                            }
+                        }
+
+                    }
+                    if(C1[0]=='W')
+            {
+                legals.push_back(NOTATION(ROW_IN+1,COL_IN-1));
+            }
+             if(C2[0]=='W')
+            {
+                legals.push_back(NOTATION(ROW_IN+1,COL_IN+1));
+            }
+          }
+
+               //C_BRD[ROW_IN][COL_IN]='X';
+               //break;
+        switch(piece_name[1])
+        {
+            case 'K':
+                {
+                    int RULES[][2]=K_RULES;
+
+                for(int R=0; R<8; R++)
+                {
+                    std::string temp=FIND_PIECE((ROW_IN+RULES[R][0]),(COL_IN+RULES[R][1]));
+                    if(temp[0]!=piece_name[0]&&temp!="NN")
+                    {
+                        legals.push_back(NOTATION((ROW_IN+RULES[R][0]),(COL_IN+RULES[R][1])));
+
+                    }
+                }
+                break;
+            }
+
+            case 'N':
+                {
+                    int RULES[][2]=N_RULES;
+                  for(int R=0; R<8; R++)
+                {
+                    std::string temp=FIND_PIECE((ROW_IN+RULES[R][0]),(COL_IN+RULES[R][1]));
+                    if(temp[0]!=piece_name[0]&&temp!="NN")
+                    {
+                        legals.push_back(NOTATION((ROW_IN+RULES[R][0]),(COL_IN+RULES[R][1])));
+
+                    }
+                }
+
+                break;
+                }
+
+            case 'B':
+                {
+                    int dir_flags[]= {0,0,0,0};
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //SOUTHWEST DIRECTION
+                    std::string temp1=FIND_PIECE(ROW_IN+relative_pos,COL_IN+relative_pos);
+
+                    if((temp1=="XX")&&(dir_flags[0]==0))
+                    {
+                        //std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                       legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN+relative_pos));
+                        //std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        if((temp1[0]!=piece_name[0])&&(temp1!="NN")&&dir_flags[0]==0)
+                        {
+                            std::cout<<"\n\n"<<temp1;
+                            std::cout<<"\n\n"<<ROW_IN+relative_pos<<" "<<COL_IN+relative_pos;
+                            legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN+relative_pos));
+                        }
+                        //std::string temp=FIND_PIECE()
+                        dir_flags[0]=1;
+                    }
+                    //NORTHWEST DIRECTION
+                    std::string temp2=FIND_PIECE(ROW_IN-relative_pos,COL_IN+relative_pos);
+                    if((temp2=="XX")&&(dir_flags[1]==0))
+                    {
+                       legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN+relative_pos));
+                    }
+                    else
+                    {
+                        if((temp2[0]!=piece_name[0])&&(temp2!="NN")&&(dir_flags[1]==0))
+                        {
+                            legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN+relative_pos));
+                        }
+
+                        dir_flags[1]=1;
+                    }
+
+                    //NORTHEAST DIRECTION
+                    std::string temp3=FIND_PIECE(ROW_IN-relative_pos,COL_IN-relative_pos);
+                    if((temp3=="XX")&&(dir_flags[2]==0))
+                    {
+                        legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN-relative_pos));
+                    }
+                    else
+                    {
+                         if((temp3[0]!=piece_name[0])&&(temp3!="NN")&&dir_flags[2]==0)
+                        {
+                            legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN-relative_pos));
+                        }
+
+
+                        dir_flags[2]=1;
+                    }
+
+                  //SOUTHEAST DIRECTION//
+                   std::string temp4=FIND_PIECE(ROW_IN+relative_pos,COL_IN-relative_pos);
+                    if((temp4=="XX")&&(dir_flags[3]==0))
+                    {
+                        //std::string temp=FIND_PIECE(ROW_IN+relative_pos,COL_IN+relative_pos);
+
+                        legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN-relative_pos));
+                    }
+                    else
+                    {
+                        if((temp4[0]!=piece_name[0])&&(temp4!="NN")&&dir_flags[3]==0)
+                        {
+
+                            legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN-relative_pos));
+                        }
+
+                        dir_flags[3]=1;
+                    }
+
+                }
+
+                 break;
+                }
+            case 'R':
+                {
+                    int dir_flags[]= {0,0,0,0};
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //SOUTH DIRECTION
+                    std::string temp1=FIND_PIECE(ROW_IN+relative_pos,COL_IN);
+
+                    if((temp1=="XX")&&(dir_flags[0]==0))
+                    {
+                        //std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                       legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN));
+                        //std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        if((temp1[0]!=piece_name[0])&&(temp1!="NN")&&dir_flags[0]==0)
+                        {
+                            std::cout<<"\n\n"<<temp1;
+                            std::cout<<"\n\n"<<ROW_IN+relative_pos<<" "<<COL_IN;
+                            legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN));
+                        }
+                        //std::string temp=FIND_PIECE()
+                        dir_flags[0]=1;
+                    }
+                    //NORTH DIRECTION
+                    std::string temp2=FIND_PIECE(ROW_IN-relative_pos,COL_IN);
+                    if((temp2=="XX")&&(dir_flags[1]==0))
+                    {
+                       legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN));
+                    }
+                    else
+                    {
+                        if((temp2[0]!=piece_name[0])&&(temp2!="NN")&&(dir_flags[1]==0))
+                        {
+                            legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN));
+                        }
+
+                        dir_flags[1]=1;
+                    }
+
+                    //EAST DIRECTION
+                    std::string temp3=FIND_PIECE(ROW_IN,COL_IN-relative_pos);
+                    if((temp3=="XX")&&(dir_flags[2]==0))
+                    {
+                        legals.push_back (NOTATION(ROW_IN,COL_IN-relative_pos));
+                    }
+                    else
+                    {
+                         if((temp3[0]!=piece_name[0])&&(temp3!="NN")&&dir_flags[2]==0)
+                        {
+                            legals.push_back (NOTATION(ROW_IN,COL_IN-relative_pos));
+                        }
+
+
+                        dir_flags[2]=1;
+                    }
+
+                  //WEST DIRECTION//
+                   std::string temp4=FIND_PIECE(ROW_IN,COL_IN+relative_pos);
+                    if((temp4=="XX")&&(dir_flags[3]==0))
+                    {
+                        //std::string temp=FIND_PIECE(ROW_IN+relative_pos,COL_IN+relative_pos);
+
+                        legals.push_back (NOTATION(ROW_IN,COL_IN+relative_pos));
+                    }
+                    else
+                    {
+                        if((temp4[0]!=piece_name[0])&&(temp4!="NN")&&dir_flags[3]==0)
+                        {
+
+                            legals.push_back (NOTATION(ROW_IN,COL_IN+relative_pos));
+                        }
+
+                        dir_flags[3]=1;
+                    }
+
+                }
+
+                 break;
+                }
+
+            case 'Q':
+                {
+
+                {
+                    int dir_flags[]= {0,0,0,0};
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //SOUTHWEST DIRECTION
+                    std::string temp1=FIND_PIECE(ROW_IN+relative_pos,COL_IN+relative_pos);
+
+                    if((temp1=="XX")&&(dir_flags[0]==0))
+                    {
+                        //std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                       legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN+relative_pos));
+                        //std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        if((temp1[0]!=piece_name[0])&&(temp1!="NN")&&dir_flags[0]==0)
+                        {
+                            std::cout<<"\n\n"<<temp1;
+                            std::cout<<"\n\n"<<ROW_IN+relative_pos<<" "<<COL_IN+relative_pos;
+                            legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN+relative_pos));
+                        }
+                        //std::string temp=FIND_PIECE()
+                        dir_flags[0]=1;
+                    }
+                    //NORTHWEST DIRECTION
+                    std::string temp2=FIND_PIECE(ROW_IN-relative_pos,COL_IN+relative_pos);
+                    if((temp2=="XX")&&(dir_flags[1]==0))
+                    {
+                       legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN+relative_pos));
+                    }
+                    else
+                    {
+                        if((temp2[0]!=piece_name[0])&&(temp2!="NN")&&(dir_flags[1]==0))
+                        {
+                            legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN+relative_pos));
+                        }
+
+                        dir_flags[1]=1;
+                    }
+
+                    //NORTHEAST DIRECTION
+                    std::string temp3=FIND_PIECE(ROW_IN-relative_pos,COL_IN-relative_pos);
+                    if((temp3=="XX")&&(dir_flags[2]==0))
+                    {
+                        legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN-relative_pos));
+                    }
+                    else
+                    {
+                         if((temp3[0]!=piece_name[0])&&(temp3!="NN")&&dir_flags[2]==0)
+                        {
+                            legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN-relative_pos));
+                        }
+
+
+                        dir_flags[2]=1;
+                    }
+
+                  //SOUTHEAST DIRECTION//
+                   std::string temp4=FIND_PIECE(ROW_IN+relative_pos,COL_IN-relative_pos);
+                    if((temp4=="XX")&&(dir_flags[3]==0))
+                    {
+                        //std::string temp=FIND_PIECE(ROW_IN+relative_pos,COL_IN+relative_pos);
+
+                        legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN-relative_pos));
+                    }
+                    else
+                    {
+                        if((temp4[0]!=piece_name[0])&&(temp4!="NN")&&dir_flags[3]==0)
+                        {
+
+                            legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN-relative_pos));
+                        }
+
+                        dir_flags[3]=1;
+                    }
+
+                }
+
+                }
+
+
+
+                  {
+
+                   int dir_flags[]= {0,0,0,0};
+                for(int relative_pos=1; relative_pos<8; relative_pos++)
+                {
+                    //SOUTHWEST DIRECTION
+                    std::string temp1=FIND_PIECE(ROW_IN+relative_pos,COL_IN);
+
+                    if((temp1=="XX")&&(dir_flags[0]==0))
+                    {
+                        //std::cout<<ROW_IN+relative_pos<<COL_IN+relative_pos<<std::endl;;
+                       legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN));
+                        //std::cout<<C_BRD[ROW_IN+relative_pos][COL_IN+relative_pos];
+                    }
+                    else
+                    {
+                        if((temp1[0]!=piece_name[0])&&(temp1!="NN")&&dir_flags[0]==0)
+                        {
+                            std::cout<<"\n\n"<<temp1;
+                            std::cout<<"\n\n"<<ROW_IN+relative_pos<<" "<<COL_IN;
+                            legals.push_back (NOTATION(ROW_IN+relative_pos,COL_IN));
+                        }
+                        //std::string temp=FIND_PIECE()
+                        dir_flags[0]=1;
+                    }
+                    //NORTHWEST DIRECTION
+                    std::string temp2=FIND_PIECE(ROW_IN-relative_pos,COL_IN);
+                    if((temp2=="XX")&&(dir_flags[1]==0))
+                    {
+                       legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN));
+                    }
+                    else
+                    {
+                        if((temp2[0]!=piece_name[0])&&(temp2!="NN")&&(dir_flags[1]==0))
+                        {
+                            legals.push_back (NOTATION(ROW_IN-relative_pos,COL_IN));
+                        }
+
+                        dir_flags[1]=1;
+                    }
+
+                    //NORTHEAST DIRECTION
+                    std::string temp3=FIND_PIECE(ROW_IN,COL_IN-relative_pos);
+                    if((temp3=="XX")&&(dir_flags[2]==0))
+                    {
+                        legals.push_back (NOTATION(ROW_IN,COL_IN-relative_pos));
+                    }
+                    else
+                    {
+                         if((temp3[0]!=piece_name[0])&&(temp3!="NN")&&dir_flags[2]==0)
+                        {
+                            legals.push_back (NOTATION(ROW_IN,COL_IN-relative_pos));
+                        }
+
+
+                        dir_flags[2]=1;
+                    }
+
+                  //SOUTHEAST DIRECTION//
+                   std::string temp4=FIND_PIECE(ROW_IN,COL_IN+relative_pos);
+                    if((temp4=="XX")&&(dir_flags[3]==0))
+                    {
+                        //std::string temp=FIND_PIECE(ROW_IN+relative_pos,COL_IN+relative_pos);
+
+                        legals.push_back (NOTATION(ROW_IN,COL_IN+relative_pos));
+                    }
+                    else
+                    {
+                        if((temp4[0]!=piece_name[0])&&(temp4!="NN")&&dir_flags[3]==0)
+                        {
+
+                            legals.push_back (NOTATION(ROW_IN,COL_IN+relative_pos));
+                        }
+
+                        dir_flags[3]=1;
+                    }
+
+                }
+                  }
+                  break;
+                }
+        }
+
+      return legals;
+
+      }
+
+  std::string NOTATION(int row,int col)
+  {
+      std::string temp;
+
+      temp+=('a'+col-1);
+      temp+= (9-row)+'0';
+
+      return temp;
+  }
+
+  void UPDATE_POS(std::string initial_pos,int N_ROW,int N_COL)
+ {
+     std::string PIECE_type;
+     PIECE_type.assign(initial_pos,0,2);
+    if(PIECE_type=="WP")
+       {
+                 WP[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+       }
+    else if(PIECE_type=="BP")
+       {
+                 BP[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+       }
+    else if(PIECE_type=="WN")
+    {
+        WN[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="BN")
+    {
+          BP[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="WK")
+    {
+        WK.MK_MV(N_ROW,N_COL);
+              std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="BK")
+    {
+        BK.MK_MV(N_ROW,N_COL);
+        std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="BB")
+    {
+          BB[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="WB")
+    {
+          WB[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="BR")
+    {
+          BR[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+    }
+    else if(PIECE_type=="WR")
+    {
+          WR[initial_pos[2]-1-'0'].MK_MV(N_ROW,N_COL);
+                 std::cout<<"POSITION UPDATED \n";
+    }
+      else if(PIECE_type=="BQ")
+    {
+        BQ.MK_MV(N_ROW,N_COL);
+        std::cout<<"POSITION UPDATED \n";
+    }
+      else if(PIECE_type=="WQ")
+    {
+        WQ.MK_MV(N_ROW,N_COL);
+        std::cout<<"POSITION UPDATED \n";
+    }
+
+       }
+
+bool CHK_IF_CHECK(char color)
+{
+    std::cout<<"CHK_IF_CHECK method entered \n";
+  for(int i=1;i<9;i++)
+    for(int j=1;j<9;j++)
+  {
+      std::string temp;
+      if(FIND_PIECE(i,j)!="XX"&&FIND_PIECE(i,j)!="NN")
+         temp.assign(FIND_PIECE(i,j),0,2);
+      else continue;
+     //std::cout<<" TEMP "<<temp<<"\n\n";
+
+     std::vector<std::string>ALL_MOVES =LEGALMOVES(temp,i,j);
+
+     //std::cout<<"LEGAL MOVES ARE ";
+     for(int i=0;i<ALL_MOVES.size();i++)
+     {
+        //std::cout<<ALL_MOVES[i]<<" ";
+         if(color=='W')
+          {
+              if(temp[0]=='B')
+              {
+                  //std::cout<<" "<<ALL_MOVES[i]<<" ";
+              if(NOTATION(WK.curr_pos[0],WK.curr_pos[1])==ALL_MOVES[i])
+              {
+                 std::cout<<"\n\n KING UNDER CHECK";
+                return 1;
+              }
+              }
+          }
+        else if(color=='B')
+        {
+            if(temp[0]=='W')
+            if(NOTATION(BK.curr_pos[0],BK.curr_pos[1])==ALL_MOVES[i])
+            {
+              std::cout<<"\n\n KING UNDER CHECK";
+             return 1;
+            }
+        }
+     }
+
+
+  }
+  return 0;
+}
+
+bool CHK_IF_CHECKMATE(char ch)
+{
+    return (CHK_IF_CHECK(ch));
+}
+
+
+};
+int main()
+{
+    int  total_moves=0;
+    char turn;
+
+   std::fstream GAME_NOTATION;
+
+
+    chessboard C1;
+
+    C1.display();
+
+    GAME_NOTATION.open("C:\\Users\\Thambu\\Desktop\\Sample game.txt",std::ios::in);
+
+  /* while(GAME_NOTATION)
+   {
+       std::string GAME_STRING;
+
+    GAME_NOTATION>>GAME_STRING;
+
+    GAME_STRING.erase(remove(GAME_STRING.begin(),GAME_STRING.end(),'-'),GAME_STRING.end());
+
+    std::cout<<"GAME STRING IS"<<GAME_STRING<<std::endl;
+
+
+
+    std::string ini_sqr;
+    std::string fin_sqr;
+
+    //std::cout<<"WHITE TO MOVE \n TOUCH THE PIECE SQUARE \n ENTER X to EXIT";
+
+    ini_sqr.assign(GAME_STRING,0,2);
+    fin_sqr.assign(GAME_STRING,2,2);
+
+    INI_SQRS.push_back(ini_sqr);
+    FIN_SQRS.push_back(fin_sqr);
+   }*/
+
+   std::string sqr;
+
+   std::cout<<"Enter the squares \n";
+
+   std::cin>>sqr;
+    while(sqr!="X")
+    {
+        if(total_moves%2==0)
+        {
+            turn='W';
+            //std::cout<<"WHITE TO MOVE \n";
+        }
+        else
+        {
+            turn='B';
+            //std::cout<<"BLACK TO MOVE \n";
+        }
+      /*   if(C1.CHK_IF_CHECKMATE(turn))
+        {
+            std::cout<<"CHECKMATE OCCURED ";
+            break;
+        }*/
+       if(C1.make_move(sqr,turn))
+       {
+           std::cout<<"\n MOVE MADE \n";
+            ++total_moves;
+       }
+        C1.display();
+
+       switch(total_moves%2)
+       {
+        case 0:std::cout<<"\nWHITE TO MOVE\n";break;
+        case 1:std::cout<<"\nBLACK TO MOVE\n";break;
+       }
+        std::cout<<"TOUCH THE SQUARE OF THE PIECE YOU ARE ABOUT TO MOVE \n\n ENTER X to EXIT";
+        std::cin>>sqr;
+    }
+
+
+
+    return 0;
+}
+
+

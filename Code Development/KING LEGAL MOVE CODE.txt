@@ -1,0 +1,49 @@
+void legal_moves()
+{
+    for(int i=0;i<8;i++)
+    {
+    int flag=0;
+        for(int j=0;j<8;j++)
+           if(C_BRD[i][j]==75)
+           {
+               if(CHK_BOUND(i+1,j+1))
+               {
+                 C_BRD[i+1][j+1]=75;
+                 C_BRD[i][j+1]=75;
+                 C_BRD[i+1][j]=75;
+                 C_BRD[i][j]=0;
+               }
+
+               if(CHK_BOUND(i+1,j-1))
+               {
+                 C_BRD[i+1][j-1]=75;
+                 C_BRD[i][j-1]=75;
+                 C_BRD[i+1][j]=75;
+                 C_BRD[i][j]=0;
+               }
+               if(CHK_BOUND(i-1,j-1))
+               {
+                 C_BRD[i-1][j-1]=75;
+                 C_BRD[i][j-1]=75;
+                 C_BRD[i-1][j]=75;
+                 C_BRD[i][j]=0;
+               }
+               if(CHK_BOUND(i-1,j+1))
+               {
+
+                 C_BRD[i-1][j+1]=75;
+                 C_BRD[i][j+1]=75;
+                 C_BRD[i-1][j]=75;
+                 C_BRD[i][j]=0;
+               }
+               flag=1;
+               break;
+           }
+       if(flag)
+        break;
+    }
+
+}
+// THIS IS THE CODE FOR THE KING WITH NO BARRIERS//
+//THE 4 IF CASES ARE for UPPER-LEFT,UPPER-RIGHT,LOWER RIGHT,LOWER LEFT POSITIONS//
+// CHECK IF CODE CAN BE OPTIMIZED//
